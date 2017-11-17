@@ -29,7 +29,7 @@ class Event(Record):
     duration = models.PositiveIntegerField(default=0)
     precision = models.PositiveIntegerField(default=0)
 
-    organizers = models.ManyToManyField(Name, blank=True)
+    organizers = ParentalManyToManyField(Name, blank=True)
 
     STATUSES = (
         ('cancelled', 'cancelled'),
