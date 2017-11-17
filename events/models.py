@@ -6,7 +6,7 @@ from django.utils.timezone import now
 
 from wagtail.api import APIField
 from wagtail.wagtailadmin.edit_handlers import (
-    FieldPanel, InlinePanel, MultiFieldPanel, PageChooserPanel)
+    FieldPanel, InlinePanel, MultiFieldPanel, PageChooserPanel, FieldRowPanel)
 from wagtail.wagtailcore.fields import RichTextField
 from wagtail.wagtailcore.models import Page, Orderable
 from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
@@ -18,7 +18,7 @@ from modelcluster.fields import ParentalKey, ParentalManyToManyField
 from taggit.models import TaggedItemBase
 
 from visualist.models import Record
-from names.models import Name
+from names.models import Agent
 
 
 class Event(Record):
@@ -29,7 +29,7 @@ class Event(Record):
     duration = models.PositiveIntegerField(default=0)
     precision = models.PositiveIntegerField(default=0)
 
-    organizers = ParentalManyToManyField(Name, blank=True)
+    organizers = ParentalManyToManyField(Agent, blank=True)
 
     STATUSES = (
         ('cancelled', 'cancelled'),
@@ -63,7 +63,11 @@ class Event(Record):
     parent_page_types = ['events.EventIndex', 'events.Event']
     content_panels = Record.content_panels + [
         MultiFieldPanel([
-            FieldPanel('start_date'),
+            FieldRowPanel([
+                FieldPanel('start_date'),
+                FieldPanel('duration'),
+                FieldPanel('precision')
+            ]),
             FieldPanel('event_status'),
             FieldPanel('categories', widget=forms.CheckboxSelectMultiple),
             FieldPanel('tags'),
@@ -76,11 +80,17 @@ class Event(Record):
         APIField('gallery_images'),
     ]
 
+    class Meta:
+        unique_together = (
+            ("start_date", "duration", 'precision'),)
+
 class EventTag(TaggedItemBase):
     content_object = ParentalKey('Event', related_name='tagged_items')
 
 
 class EventIndex(Page):
+    schema = 'http://schema.org/ItemList'
+
     intro = RichTextField(blank=True)
 
     content_panels = Page.content_panels + [
@@ -96,6 +106,7 @@ class EventIndex(Page):
 
 
 class EventGalleryImage(Orderable):
+
     event = ParentalKey(Event, related_name='gallery_images')
     image = models.ForeignKey(
         'wagtailimages.Image', on_delete=models.CASCADE, related_name='+'
@@ -109,6 +120,7 @@ class EventGalleryImage(Orderable):
 
 
 class EventTagIndex(Page):
+    schema = 'http://schema.org/ItemList'
 
     def get_context(self, request):
         # Filter by tag

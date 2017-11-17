@@ -2,16 +2,19 @@ from __future__ import unicode_literals
 
 from django.db import models
 
-from wagtail.wagtailcore.models import Page
-from wagtail.wagtailcore.fields import RichTextField
 from wagtail.wagtailadmin.edit_handlers import FieldPanel
-
+from wagtail.wagtailcore.fields import RichTextField
+from wagtail.wagtailcore.models import Page
 from wagtail.wagtailimages.models import Image, AbstractImage, AbstractRendition
+from wagtail.wagtailsnippets.models import register_snippet
+from wagtail.wagtailsnippets.edit_handlers import SnippetChooserPanel
 
 
 class Record(Page):
-    body = RichTextField(blank=True)
-    same_as = models.URLField(blank=True)
+    schema = 'http://schema.org/Thing'
+
+    body = RichTextField(blank=True, null=True)
+    same_as = models.URLField(blank=True, null=True)
 
     oclc_fast_id = models.IntegerField(blank=True, null=True)
     in_cpl_artistfiles = models.BooleanField(default=False)
@@ -24,7 +27,7 @@ class Record(Page):
         FieldPanel('body', classname="full"),
         FieldPanel('same_as'),
         FieldPanel('oclc_fast_id'),
-        FieldPanel('source'), # TODO
+        SnippetChooserPanel('source'),
     ]
 
     def citation(self): # TODO
@@ -42,8 +45,10 @@ class Record(Page):
         return None
 
 
+@register_snippet
 class Source(models.Model):
     # TODO this clearly needs work
+    title       = models.CharField(max_length=250)
     authors     = models.CharField(max_length=250, blank=True, null=True) # list, etc.
     editors     = models.CharField(max_length=250, blank=True, null=True)
     translators = models.CharField(max_length=250, blank=True, null=True)
@@ -53,11 +58,29 @@ class Source(models.Model):
     pages       = models.CharField(max_length=250, blank=True, null=True)
     volume      = models.CharField(max_length=250, blank=True, null=True)
     series      = models.CharField(max_length=250, blank=True, null=True)
+    same_as     = models.URLField(blank=True, null=True)
+
+    panels = [
+        FieldPanel('title'),
+        FieldPanel('authors'),
+        FieldPanel('editors'),
+        FieldPanel('translators'),
+        FieldPanel('identifiers'),
+        FieldPanel('archive'),
+        FieldPanel('edition'),
+        FieldPanel('pages'),
+        FieldPanel('volume'),
+        FieldPanel('series'),
+    ]
+
+    def __str__(self):
+        return '{} by {}'.format(self.title, self.authors)
 
 
 # TODO: Modifying Images (following) will require editing the admin templates.
 # class CustomImage(AbstractImage):
-#     caption = models.CharField(max_length=250, blank=True, null=True)
+#     schema = 'http://schema.org/ImageObject'
+#     caption = models.CharField(max_length=250, blank=True, null=True) # doesn't it already have one? confirm
 #     # checksum = models.CharField(max_length=250) # TODO
 #     # version = models.CharField(max_length=25) # TODO: necessary?
 #     # copyright_status = models.TextField() # TODO: better way?

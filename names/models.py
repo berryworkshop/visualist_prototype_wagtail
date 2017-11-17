@@ -10,7 +10,9 @@ from wagtail.wagtailsearch import index
 from visualist.models import Record
 
 
-class Name(Record):
+class Agent(Record):
+    schema = 'http://xmlns.com/foaf/spec/#term_Agent'
+
     getty_ulan_id = models.IntegerField(blank=True, null=True)
 
     parent_page_types = []
@@ -23,7 +25,9 @@ class Name(Record):
     ]
 
 
-class Person(Name):
+class Person(Agent):
+    schema = 'http://schema.org/Person'
+
     GENDERS = (
         ('m', 'male'),
         ('f', 'female'),
@@ -33,10 +37,10 @@ class Person(Name):
         max_length=1, blank=True, null=True)
 
     parent_page_types = ['names.PersonIndex', 'names.Organization']
-    search_fields = Name.search_fields + [
+    search_fields = Agent.search_fields + [
         index.SearchField('gender'),
     ]
-    content_panels = Name.content_panels + [
+    content_panels = Agent.content_panels + [
         FieldPanel('gender'),
     ]
 
@@ -47,18 +51,22 @@ class Person(Name):
         verbose_name_plural = 'people'
 
 
-class Organization(Name):
+class Organization(Agent):
+    schema = 'http://schema.org/Organization'
+
     nonprofit = models.BooleanField(default=True)
 
     parent_page_types = [
         'names.OrganizationIndex', 'names.Organization']
-    search_fields = Name.search_fields + []
-    content_panels = Name.content_panels + [
+    search_fields = Agent.search_fields + []
+    content_panels = Agent.content_panels + [
         FieldPanel('nonprofit'),
     ]
 
 
 class PersonIndex(Page):
+    schema = 'http://schema.org/ItemList'
+
     intro = RichTextField(blank=True)
 
     content_panels = Page.content_panels + [
@@ -74,6 +82,8 @@ class PersonIndex(Page):
 
 
 class OrganizationIndex(Page):
+    schema = 'http://schema.org/ItemList'
+
     intro = RichTextField(blank=True)
 
     content_panels = Page.content_panels + [

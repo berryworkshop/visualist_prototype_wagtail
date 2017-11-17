@@ -1,6 +1,6 @@
 from wagtail.contrib.modeladmin.options import (
     ModelAdmin, modeladmin_register)
-from .models import Name, Person, Organization
+from .models import Agent, Person, Organization
 
 
 class PersonModelAdmin(ModelAdmin):
