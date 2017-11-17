@@ -22,20 +22,24 @@ class Person(Entity):
     gender = models.CharField(choices=GENDERS,
         max_length=1, blank=True, null=True)
 
+    parent_page_types = ['vdirectory.PersonIndex', 'vdirectory.Organization']
     search_fields = Entity.search_fields + [
         index.SearchField('gender'),
     ]
-
     content_panels = Entity.content_panels + [
         FieldPanel('gender'),
     ]
+
+    class Meta:
+        verbose_name_plural = 'people'
 
 
 class Organization(Entity):
     nonprofit = models.BooleanField(default=True)
 
+    parent_page_types = [
+        'vdirectory.OrganizationIndex', 'vdirectory.Organization']
     search_fields = Entity.search_fields + []
-
     content_panels = Entity.content_panels + [
         FieldPanel('nonprofit'),
     ]
@@ -51,8 +55,8 @@ class PersonIndex(Page):
     def get_context(self, request):
         # Update context to include only published posts, ordered by reverse-chron
         context = super().get_context(request)
-        peoplepages = self.get_children().live().order_by('-first_published_at')
-        context['peoplepages'] = peoplepages
+        people = self.get_children().live().order_by('-first_published_at')
+        context['people'] = people
         return context
 
 

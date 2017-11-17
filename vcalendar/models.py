@@ -35,7 +35,6 @@ class Event(Record):
     STATUSES = (
         ('cancelled', 'cancelled'),
     )
-
     event_status = models.CharField(
         choices=STATUSES,
         blank=True,
@@ -61,7 +60,7 @@ class Event(Record):
         pass
 
     search_fields = Page.search_fields + []
-
+    parent_page_types = ['vcalendar.EventIndex', 'vcalendar.Event']
     content_panels = Page.content_panels + [
         MultiFieldPanel([
             FieldPanel('start_date'),
@@ -72,7 +71,6 @@ class Event(Record):
         InlinePanel('gallery_images', label="Gallery images"),
         FieldPanel('organizers', widget=forms.CheckboxSelectMultiple),
     ]
-
     api_fields = [
         APIField('published_date'),
         APIField('gallery_images'),
