@@ -1,9 +1,8 @@
 from django import forms
-from django.db import models
-from django.db import models
-from django.utils.timezone import now
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+from django.db import models
+from django.utils.timezone import now
 
 from wagtail.api import APIField
 from wagtail.wagtailadmin.edit_handlers import (
@@ -19,7 +18,7 @@ from modelcluster.fields import ParentalKey, ParentalManyToManyField
 from taggit.models import TaggedItemBase
 
 from visualist.models import Record
-from vdirectory.models import Entity
+from names.models import Name
 
 
 class Event(Record):
@@ -30,7 +29,7 @@ class Event(Record):
     duration = models.PositiveIntegerField(default=0)
     precision = models.PositiveIntegerField(default=0)
 
-    organizers = ParentalManyToManyField(Entity, blank=True)
+    organizers = models.ManyToManyField(Name, blank=True)
 
     STATUSES = (
         ('cancelled', 'cancelled'),
@@ -60,7 +59,7 @@ class Event(Record):
         pass
 
     search_fields = Page.search_fields + []
-    parent_page_types = ['vcalendar.EventIndex', 'vcalendar.Event']
+    parent_page_types = ['events.EventIndex', 'events.Event']
     content_panels = Page.content_panels + [
         MultiFieldPanel([
             FieldPanel('start_date'),
