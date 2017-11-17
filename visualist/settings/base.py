@@ -44,7 +44,8 @@ INSTALLED_APPS = [
     'modelcluster',
     'taggit',
     'wagtail.api.v2',
-    'rest_framework',
+    'wagtail.contrib.modeladmin',
+    # 'rest_framework',
 
     'django.contrib.admin',
     'django.contrib.auth',
@@ -54,6 +55,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'vcalendar',
+    'vdirectory',
+    'visualist',
+
 ]
 
 MIDDLEWARE = [

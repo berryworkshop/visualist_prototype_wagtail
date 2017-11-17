@@ -2,14 +2,14 @@
 
 {% load wagtailcore_tags wagtailimages_tags %}
 
-{% block body_class %}template-eventindexpage{% endblock %}
+{% block body_class %}template-eventindex{% endblock %}
 
 {% block content %}
     <h1>{{ page.title }}</h1>
 
     <div class="intro">{{ page.intro|richtext }}</div>
 
-    {% for post in eventpages %}
+    {% for post in events %}
       {% with post=post.specific %}
         <h2><a href="{% pageurl post %}">{{ post.title }}</a></h2>
 

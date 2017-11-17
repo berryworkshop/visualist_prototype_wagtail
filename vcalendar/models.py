@@ -1,45 +1,48 @@
 from django import forms
 from django.db import models
+from django.db import models
+from django.utils.timezone import now
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 
-from modelcluster.fields import ParentalKey, ParentalManyToManyField
-from modelcluster.contrib.taggit import ClusterTaggableManager
-from taggit.models import TaggedItemBase
-
-from wagtail.wagtailcore.models import Page, Orderable
-from wagtail.wagtailcore.fields import RichTextField
+from wagtail.api import APIField
 from wagtail.wagtailadmin.edit_handlers import (
-    FieldPanel, InlinePanel, MultiFieldPanel)
+    FieldPanel, InlinePanel, MultiFieldPanel, PageChooserPanel)
+from wagtail.wagtailcore.fields import RichTextField
+from wagtail.wagtailcore.models import Page, Orderable
 from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
 from wagtail.wagtailsearch import index
 from wagtail.wagtailsnippets.models import register_snippet
 
+from modelcluster.contrib.taggit import ClusterTaggableManager
+from modelcluster.fields import ParentalKey, ParentalManyToManyField
+from taggit.models import TaggedItemBase
 
-class EventIndexPage(Page):
-    intro = RichTextField(blank=True)
-
-    content_panels = Page.content_panels + [
-        FieldPanel('intro', classname="full")
-    ]
-
-    def get_context(self, request):
-        # Update context to include only published posts, ordered by reverse-chron
-        context = super(EventIndexPage, self).get_context(request)
-        eventpages = self.get_children().live().order_by('-first_published_at')
-        context['eventpages'] = eventpages
-        return context
+from visualist.models import Record
+from vdirectory.models import Entity
 
 
-class EventPageTag(TaggedItemBase):
-    content_object = ParentalKey('EventPage', related_name='tagged_items')
+class Event(Record):
+    schema = 'http://schema.org/Event'
 
+    # see: https://goo.gl/vA8HD8
+    start_date = models.DateTimeField(default=now)
+    duration = models.PositiveIntegerField(default=0)
+    precision = models.PositiveIntegerField(default=0)
 
-class EventPage(Page):
-    date = models.DateField("Post date")
-    intro = models.CharField(max_length=250)
-    body = RichTextField(blank=True)
-    tags = ClusterTaggableManager(through=EventPageTag, blank=True)
-    categories = ParentalManyToManyField('vcalendar.EventCategory', blank=True)
+    organizers = ParentalManyToManyField(Entity, blank=True)
 
+    STATUSES = (
+        ('cancelled', 'cancelled'),
+    )
+
+    event_status = models.CharField(
+        choices=STATUSES,
+        blank=True,
+        max_length=25)
+
+    categories = ParentalManyToManyField('EventCategory', blank=True)
+    tags = ClusterTaggableManager(through='EventTag', blank=True)
 
     def main_image(self):
         gallery_item = self.gallery_images.first()
@@ -48,25 +51,54 @@ class EventPage(Page):
         else:
             return None
 
-    search_fields = Page.search_fields + [
-        index.SearchField('intro'),
-        index.SearchField('body'),
-    ]
+    def endDate(self): # TODO
+        return self.startDate
+
+    def citation(self): # TODO
+        pass
+
+    def date(self): # TODO
+        pass
+
+    search_fields = Page.search_fields + []
 
     content_panels = Page.content_panels + [
         MultiFieldPanel([
-            FieldPanel('date'),
-            FieldPanel('tags'),
+            FieldPanel('start_date'),
+            FieldPanel('event_status'),
             FieldPanel('categories', widget=forms.CheckboxSelectMultiple),
+            FieldPanel('tags'),
         ], heading="Event information"),
-        FieldPanel('intro'),
-        FieldPanel('body', classname="full"),
         InlinePanel('gallery_images', label="Gallery images"),
+        FieldPanel('organizers', widget=forms.CheckboxSelectMultiple),
     ]
 
+    api_fields = [
+        APIField('published_date'),
+        APIField('gallery_images'),
+    ]
 
-class EventPageGalleryImage(Orderable):
-    page = ParentalKey(EventPage, related_name='gallery_images')
+class EventTag(TaggedItemBase):
+    content_object = ParentalKey('Event', related_name='tagged_items')
+
+
+class EventIndex(Page):
+    intro = RichTextField(blank=True)
+
+    content_panels = Page.content_panels + [
+        FieldPanel('intro', classname="full")
+    ]
+
+    def get_context(self, request):
+        # Update context to include only published posts, ordered by reverse-chron
+        context = super().get_context(request)
+        events = self.get_children().live().order_by('-first_published_at')
+        context['events'] = events
+        return context
+
+
+class EventGalleryImage(Orderable):
+    event = ParentalKey(Event, related_name='gallery_images')
     image = models.ForeignKey(
         'wagtailimages.Image', on_delete=models.CASCADE, related_name='+'
     )
@@ -78,16 +110,16 @@ class EventPageGalleryImage(Orderable):
     ]
 
 
-class EventTagIndexPage(Page):
+class EventTagIndex(Page):
 
     def get_context(self, request):
         # Filter by tag
         tag = request.GET.get('tag')
-        eventpages = EventPage.objects.filter(tags__name=tag)
+        events = Event.objects.filter(tags__name=tag)
 
         # Update template context
-        context = super(EventTagIndexPage, self).get_context(request)
-        context['eventpages'] = eventpages
+        context = super().get_context(request)
+        context['events'] = events
         return context
 
 
