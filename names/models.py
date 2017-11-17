@@ -10,9 +10,13 @@ from wagtail.wagtailsearch import index
 from visualist.models import Record
 
 
-class Name(Page):
+class Name(Record):
+    getty_ulan_id = models.IntegerField(blank=True, null=True)
+
     parent_page_types = []
     content_panels = Page.content_panels + [
+        FieldPanel('getty_ulan_id'),
+        FieldPanel('oclc_fast_id'),
 
         # following not currently possible, as per https://goo.gl/nNfNWQ # TODO
         # FieldPanel('organizer_of', widget=forms.CheckboxSelectMultiple),

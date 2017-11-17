@@ -147,3 +147,7 @@ WAGTAIL_SITE_NAME = "visualist"
 # Base URL to use when referring to full URLs within the Wagtail admin backend -
 # e.g. in notification emails. Don't include '/admin' or a trailing slash
 BASE_URL = 'http://example.com'
+
+# TODO: modifying the image class will require editing
+# the stock wagtail admin templates.  See code in visualist.models
+# WAGTAILIMAGES_IMAGE_MODEL = 'visualist.CustomImage'

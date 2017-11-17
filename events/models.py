@@ -37,6 +37,7 @@ class Event(Record):
     event_status = models.CharField(
         choices=STATUSES,
         blank=True,
+        null=True,
         max_length=25)
 
     categories = ParentalManyToManyField('EventCategory', blank=True)
@@ -58,9 +59,9 @@ class Event(Record):
     def date(self): # TODO
         pass
 
-    search_fields = Page.search_fields + []
+    search_fields = Record.search_fields + []
     parent_page_types = ['events.EventIndex', 'events.Event']
-    content_panels = Page.content_panels + [
+    content_panels = Record.content_panels + [
         MultiFieldPanel([
             FieldPanel('start_date'),
             FieldPanel('event_status'),
