@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'visualist',
     'names',
     'events',
+    'places',
 
 ]
 
