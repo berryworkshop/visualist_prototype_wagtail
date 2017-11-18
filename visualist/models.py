@@ -155,13 +155,20 @@ class Source(models.Model):
     ]
 
     def __str__(self):
-        return '{} by {}'.format(self.title, self.authors)
+        if self.authors:
+            return '{} by {}'.format(self.title, self.authors)
+        return self.title
+
+    class Meta:
+        unique_together = (
+            ('title', 'authors', 'edition'),
+        )
 
 
 @register_snippet
 class Website(models.Model):
     name = models.CharField(max_length=250)
-    href = models.URLField()
+    href = models.URLField(unique=True)
     description = models.TextField(blank=True, null=True)
 
     panels = [
@@ -170,11 +177,16 @@ class Website(models.Model):
         FieldPanel('description'),
     ]
 
+    def __str__(self):
+        return self.name
+
 
 class ExtraName(models.Model):
-    name = models.CharField(max_length=250)
+    name = models.CharField(max_length=250, unique=True)
 
     panels = [
         FieldPanel('name'),
     ]
 
+    def __str__(self):
+        return self.name

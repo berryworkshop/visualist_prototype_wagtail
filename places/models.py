@@ -52,7 +52,7 @@ class Place(Record):
     )
     region = models.CharField(
         choices=REGIONS,
-        max_length=250,
+        max_length=2,
         default="IL",
         blank=True,
         null=True,
@@ -63,15 +63,15 @@ class Place(Record):
         null=True,
     )
     COUNTRIES = (
-        ('CA','Canada'),
-        ('FR','France'),
-        ('MX','Mexico'),
-        ('US','United States'),
+        ('CAN','Canada'),
+        ('FRA','France'),
+        ('MEX','Mexico'),
+        ('USA','United States'),
     )
     countries = models.CharField(
         choices=COUNTRIES,
-        max_length=250,
-        default="US",
+        max_length=3,
+        default="USA",
         blank=True,
         null=True,
     )
@@ -88,7 +88,7 @@ class Place(Record):
 
 @register_snippet
 class PlaceCategory(models.Model):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, unique=True)
     icon = models.ForeignKey(
         'wagtailimages.Image', null=True, blank=True,
         on_delete=models.SET_NULL, related_name='+'

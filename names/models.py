@@ -131,7 +131,7 @@ LABELS = (
 
 @register_snippet
 class PersonCategory(models.Model):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, unique=True)
     icon = models.ForeignKey(
         'wagtailimages.Image', null=True, blank=True,
         on_delete=models.SET_NULL, related_name='+'
@@ -151,7 +151,7 @@ class PersonCategory(models.Model):
 
 @register_snippet
 class OrganizationCategory(models.Model):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, unique=True)
     icon = models.ForeignKey(
         'wagtailimages.Image', null=True, blank=True,
         on_delete=models.SET_NULL, related_name='+'
@@ -171,7 +171,7 @@ class OrganizationCategory(models.Model):
 
 class Email(models.Model):
     label = models.CharField(max_length=25, choices=LABELS, default="primary")
-    address = models.EmailField()
+    address = models.EmailField(unique=True)
     description = models.TextField(blank=True, null=True)
 
     panels = [
@@ -180,14 +180,17 @@ class Email(models.Model):
         FieldPanel('description'),
     ]
 
+    def __str__(self):
+        return "{} ({})".format(self.address, self.label)
+
 
 class Phone(models.Model):
     label = models.CharField(max_length=25, choices=LABELS, default="primary")
-    country = models.IntegerField()
+    country = models.IntegerField(default=1)
     area_code = models.IntegerField()
     exchange_code = models.IntegerField()
     number = models.IntegerField()
-    extension = models.CharField(max_length=25)
+    extension = models.CharField(max_length=25, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
 
     panels = [
@@ -202,6 +205,19 @@ class Phone(models.Model):
         FieldPanel('description'),
     ]
 
+    def __str__(self):
+        ext = ""
+        if self.extension:
+            ext = "x{}".format(self.extension)
+        return "{} ({}) {}-{}{}".format(
+            self.country, self.area_code, self.exchange_code,
+            self.number, ext,
+        )
+
+    class Meta:
+        unique_together = (
+            ('country', 'area_code', 'exchange_code', 'number', 'extension'),
+        )
 
 
 class SocialAccount(models.Model):
@@ -234,3 +250,11 @@ class SocialAccount(models.Model):
         FieldPanel('account'),
         FieldPanel('description'),
     ]
+
+    def __str__(self):
+        return "{}: {}".format(self.service, self.account)
+
+    class Meta:
+        unique_together = (
+            ('service', 'account'),
+        )
