@@ -30,7 +30,12 @@ class Event(Record):
     precision = models.PositiveIntegerField(default=0)
     categories = ParentalManyToManyField('EventCategory', blank=True)
     tags = ClusterTaggableManager(through='EventTag', blank=True)
-    organizers = ParentalManyToManyField(Agent, blank=True)
+    organizers = ParentalManyToManyField(Agent, blank=True,
+        related_name='organizer_of')
+
+    venues = ParentalManyToManyField('names.Organization', blank=True)
+    locations = ParentalManyToManyField('places.Place', blank=True)
+
 
     # TODO: more ParentalManyToManyFields for these?
     # contributors

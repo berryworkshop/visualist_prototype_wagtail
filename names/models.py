@@ -2,7 +2,8 @@ from django import forms
 from django.db import models
 from django.utils.text import slugify
 
-from wagtail.wagtailadmin.edit_handlers import FieldPanel, InlinePanel
+from wagtail.wagtailadmin.edit_handlers import (
+    FieldPanel, InlinePanel, FieldRowPanel)
 from wagtail.wagtailcore.fields import RichTextField
 from wagtail.wagtailcore.models import Page
 from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
@@ -18,6 +19,9 @@ class Agent(Record):
     schema = 'http://xmlns.com/foaf/spec/#term_Agent'
 
     getty_ulan_id = models.IntegerField(blank=True, null=True)
+    emails = models.ManyToManyField('names.Email', blank=True)
+    phones = models.ManyToManyField('names.Phone', blank=True)
+    social_accounts = models.ManyToManyField('names.SocialAccount', blank=True)
 
     parent_page_types = []
     content_panels = Page.content_panels + [
@@ -71,6 +75,8 @@ class Organization(Agent):
     members = ParentalManyToManyField('Person',
         blank=True, related_name='member_of')
 
+    locations = ParentalManyToManyField('places.Place', blank=True)
+
     parent_page_types = [
         'names.OrganizationIndex', 'names.Organization']
     search_fields = Agent.search_fields + []
@@ -115,6 +121,14 @@ class OrganizationIndex(Page):
         return context
 
 
+LABELS = (
+    ('primary', 'primary'),
+    ('secondary', 'secondary'),
+    ('work', 'work'),
+    ('personal', 'personal'),
+)
+
+
 @register_snippet
 class PersonCategory(models.Model):
     name = models.CharField(max_length=255)
@@ -153,3 +167,70 @@ class OrganizationCategory(models.Model):
 
     class Meta:
         verbose_name_plural = 'organization categories'
+
+
+class Email(models.Model):
+    label = models.CharField(max_length=25, choices=LABELS, default="primary")
+    address = models.EmailField()
+    description = models.TextField(blank=True, null=True)
+
+    panels = [
+        FieldPanel('label'),
+        FieldPanel('address'),
+        FieldPanel('description'),
+    ]
+
+
+class Phone(models.Model):
+    label = models.CharField(max_length=25, choices=LABELS, default="primary")
+    country = models.IntegerField()
+    area_code = models.IntegerField()
+    exchange_code = models.IntegerField()
+    number = models.IntegerField()
+    extension = models.CharField(max_length=25)
+    description = models.TextField(blank=True, null=True)
+
+    panels = [
+        FieldPanel('label'),
+        FieldRowPanel([
+            FieldPanel('country'),
+            FieldPanel('area_code'),
+            FieldPanel('exchange_code'),
+            FieldPanel('number'),
+            FieldPanel('extension'),
+        ]),
+        FieldPanel('description'),
+    ]
+
+
+
+class SocialAccount(models.Model):
+    SERVICES = (
+        ('askfm',     'Ask.fm'),
+        ('facebook',  'Facebook'),
+        ('flickr',    'Flickr'),
+        ('foursquare','Foursquare'),
+        ('github',    'GitHub'),
+        ('googleplus','Google+'),
+        ('instagram', 'Instagram'),
+        ('linkedin',  'LinkedIn'),
+        ('meetup',    'Meetup'),
+        ('pinterest', 'Pinterest'),
+        ('reddit',    'Reddit'),
+        ('snapchat',  'SnapChat'),
+        ('tumblr',    'Tumblr'),
+        ('twitter',   'Twitter'),
+        ('vine',      'Vine'),
+        ('whatsapp',  'WhatsApp'),
+        ('yelp',      'Yelp'),
+        ('youtube',   'YouTube'),
+    )
+    service = models.CharField(max_length=25, choices=SERVICES, default="primary")
+    account = models.CharField(max_length=250)
+    description = models.TextField(blank=True, null=True)
+
+    panels = [
+        FieldPanel('service'),
+        FieldPanel('account'),
+        FieldPanel('description'),
+    ]

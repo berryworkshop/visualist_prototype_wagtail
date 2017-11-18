@@ -14,6 +14,11 @@ class Place(Record):
 
     categories = ParentalManyToManyField('PlaceCategory', blank=True)
 
+    group_friendly = models.NullBooleanField(blank=True, null=True)
+    appointment_only = models.NullBooleanField(blank=True, null=True)
+    hours = models.TextField()
+
+
     # TODO: think on this
     latitude = models.DecimalField(
         decimal_places=7,

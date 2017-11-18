@@ -24,6 +24,8 @@ class Record(Page):
     source = models.ForeignKey('visualist.Source', blank=True, null=True,
         on_delete=models.PROTECT,)
 
+    extra_names = models.ManyToManyField('visualist.ExtraName', blank=True)
+
     content_panels = Page.content_panels + [
         FieldPanel('body', classname="full"),
         FieldPanel('same_as'),
@@ -73,51 +75,6 @@ class Record(Page):
     #     pass
 
 
-@register_snippet
-class Source(models.Model):
-    # TODO this clearly needs work
-
-    CATEGORIES = (
-        ('website','website'),
-        ('book','book'),
-        ('journal_article','journal article'),
-        ('newspaper_article','newspaper article'),
-    )
-    category = models.CharField(
-        max_length=25,
-        choices=CATEGORIES,
-        default="website",
-    )
-    title       = models.CharField(max_length=250)
-    authors     = models.CharField(max_length=250, blank=True, null=True) # list, etc.
-    editors     = models.CharField(max_length=250, blank=True, null=True)
-    translators = models.CharField(max_length=250, blank=True, null=True)
-    identifiers = models.CharField(max_length=250, blank=True, null=True) # e.g. ISBN
-    archive     = models.CharField(max_length=250, blank=True, null=True)
-    edition     = models.CharField(max_length=250, blank=True, null=True)
-    pages       = models.CharField(max_length=250, blank=True, null=True)
-    volume      = models.CharField(max_length=250, blank=True, null=True)
-    series      = models.CharField(max_length=250, blank=True, null=True)
-    same_as     = models.URLField(blank=True, null=True)
-
-    panels = [
-        FieldPanel('title'),
-        FieldPanel('authors'),
-        FieldPanel('editors'),
-        FieldPanel('translators'),
-        FieldPanel('identifiers'),
-        FieldPanel('archive'),
-        FieldPanel('edition'),
-        FieldPanel('pages'),
-        FieldPanel('volume'),
-        FieldPanel('series'),
-    ]
-
-    def __str__(self):
-        return '{} by {}'.format(self.title, self.authors)
-
-
-
 # TODO: Modifying Images (following) will require editing the admin templates.
 # class CustomImage(AbstractImage):
 #     schema = 'http://schema.org/ImageObject'
@@ -155,3 +112,69 @@ class Source(models.Model):
 
 #     class Meta:
 #         verbose_name_plural = 'image categories'
+
+
+@register_snippet
+class Source(models.Model):
+    # TODO this clearly needs work
+
+    CATEGORIES = (
+        ('website','website'),
+        ('book','book'),
+        ('journal_article','journal article'),
+        ('newspaper_article','newspaper article'),
+    )
+    category = models.CharField(max_length=25, choices=CATEGORIES,
+        default="website",)
+    title       = models.CharField(max_length=250)
+    authors     = models.CharField(max_length=250, blank=True, null=True) # list, etc.
+    editors     = models.CharField(max_length=250, blank=True, null=True)
+    translators = models.CharField(max_length=250, blank=True, null=True)
+    identifiers = models.CharField(max_length=250, blank=True, null=True) # e.g. ISBN
+    archive     = models.CharField(max_length=250, blank=True, null=True)
+    edition     = models.CharField(max_length=250, blank=True, null=True)
+    pages       = models.CharField(max_length=250, blank=True, null=True)
+    volume      = models.CharField(max_length=250, blank=True, null=True)
+    series      = models.CharField(max_length=250, blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+    same_as     = models.ManyToManyField('visualist.Website', blank=True)
+
+    panels = [
+        FieldPanel('title'),
+        FieldPanel('authors'),
+        FieldPanel('editors'),
+        FieldPanel('translators'),
+        FieldPanel('identifiers'),
+        FieldPanel('archive'),
+        FieldPanel('edition'),
+        FieldPanel('pages'),
+        FieldPanel('volume'),
+        FieldPanel('series'),
+        FieldPanel('same_as'),
+        FieldPanel('description'),
+    ]
+
+    def __str__(self):
+        return '{} by {}'.format(self.title, self.authors)
+
+
+@register_snippet
+class Website(models.Model):
+    name = models.CharField(max_length=250)
+    href = models.URLField()
+    description = models.TextField(blank=True, null=True)
+
+    panels = [
+        FieldPanel('name'),
+        FieldPanel('href'),
+        FieldPanel('description'),
+    ]
+
+
+class ExtraName(models.Model):
+    name = models.CharField(max_length=250)
+
+    panels = [
+        FieldPanel('name'),
+    ]
+
