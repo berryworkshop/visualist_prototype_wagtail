@@ -3,5 +3,44 @@
     - vocabulary
     - descriptions, hover text
     - canonical_url
-  - Places
-    - just think on it a bit; separate out addresses?
+- Places
+  - just think on it a bit; separate out addresses?
+- Works
+  - relationships (etc.)
+    - editors
+    - affiliates
+    - publishers
+    - creators
+    - translators
+- sources for images and records
+- create initial_data.json
+  - event
+    - course
+    - convention
+    - exhibition
+    - fair
+    - performance
+    - reception
+    - residency
+    - workshop
+  - person
+    - architect
+    - artist
+    - curator
+    - filmmaker
+    - gallerist
+    - manager
+    - professor
+    - programmer
+    - writer
+  - organization
+    - archive
+    - association
+    - company
+    - consortium
+    - foundation
+    - gallery
+    - library
+    - museum
+    - publisher
+    - school

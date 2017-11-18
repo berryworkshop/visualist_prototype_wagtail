@@ -1,8 +1,19 @@
 from django.db import models
 
+from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
+from wagtail.wagtailsnippets.models import register_snippet
+from wagtail.wagtailadmin.edit_handlers import FieldPanel
+
+from modelcluster.fields import ParentalKey, ParentalManyToManyField
+
 from visualist.models import Record
 
+
 class Place(Record):
+    schema = 'http://schema.org/Place'
+
+    categories = ParentalManyToManyField('PlaceCategory', blank=True)
+
     # TODO: think on this
     latitude = models.DecimalField(
         decimal_places=7,
@@ -68,3 +79,23 @@ class Place(Record):
         unique_together = (
             ("latitude", "longitude", "altitude"),
         )
+
+
+@register_snippet
+class PlaceCategory(models.Model):
+    name = models.CharField(max_length=255)
+    icon = models.ForeignKey(
+        'wagtailimages.Image', null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='+'
+    )
+
+    panels = [
+        FieldPanel('name'),
+        ImageChooserPanel('icon'),
+    ]
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name_plural = 'place categories'

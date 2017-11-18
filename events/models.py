@@ -28,8 +28,18 @@ class Event(Record):
     start_date = models.DateTimeField(default=now)
     duration = models.PositiveIntegerField(default=0)
     precision = models.PositiveIntegerField(default=0)
-
+    categories = ParentalManyToManyField('EventCategory', blank=True)
+    tags = ClusterTaggableManager(through='EventTag', blank=True)
     organizers = ParentalManyToManyField(Agent, blank=True)
+
+    # TODO: more ParentalManyToManyFields for these?
+    # contributors
+    # curators
+    # exhibitors
+    # performers
+
+    # venues = ParentalManyToManyField(Agent,
+        # blank=True) # TODO: link to Organization, or Place?
 
     STATUSES = (
         ('cancelled', 'cancelled'),
@@ -39,9 +49,6 @@ class Event(Record):
         blank=True,
         null=True,
         max_length=25)
-
-    categories = ParentalManyToManyField('EventCategory', blank=True)
-    tags = ClusterTaggableManager(through='EventTag', blank=True)
 
     def main_image(self):
         gallery_item = self.gallery_images.first()

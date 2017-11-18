@@ -2,7 +2,7 @@ from __future__ import unicode_literals
 
 from django.db import models
 
-from wagtail.wagtailadmin.edit_handlers import FieldPanel
+from wagtail.wagtailadmin.edit_handlers import FieldPanel, FieldRowPanel
 from wagtail.wagtailcore.fields import RichTextField
 from wagtail.wagtailcore.models import Page
 from wagtail.wagtailimages.models import Image, AbstractImage, AbstractRendition
@@ -14,8 +14,9 @@ class Record(Page):
     schema = 'http://schema.org/Thing'
 
     body = RichTextField(blank=True, null=True)
+    is_primary = models.BooleanField(default=False)
+    is_featured = models.BooleanField(default=False)
     same_as = models.URLField(blank=True, null=True)
-
     oclc_fast_id = models.IntegerField(blank=True, null=True)
     in_cpl_artistfiles = models.BooleanField(default=False)
 
@@ -26,9 +27,20 @@ class Record(Page):
     content_panels = Page.content_panels + [
         FieldPanel('body', classname="full"),
         FieldPanel('same_as'),
-        FieldPanel('oclc_fast_id'),
+        FieldRowPanel([
+            FieldPanel('is_primary'),
+            FieldPanel('is_featured'),
+        ]),
+        FieldRowPanel([
+            FieldPanel('same_as'),
+            FieldPanel('oclc_fast_id'),
+            FieldPanel('in_cpl_artistfiles'),
+        ]),
         SnippetChooserPanel('source'),
     ]
+
+    class Meta:
+        abstract = True
 
     def citation(self): # TODO
         pass
@@ -36,18 +48,46 @@ class Record(Page):
     def date(self): # TODO
         pass
 
-    class Meta:
-        abstract = True
-
     def cpl_url(self):
         if self.in_cpl_artistfiles:
             return 'https://www.chipublib.org/fa-chicago-artists-archive/'
         return None
 
+        def age(self):
+          pass
+
+    # TODO: add following if necessary
+    # def get_absolute_url(self):
+    #     pass
+    #
+    # def location(self):
+    #     pass
+    #
+    # def address(self):
+    #     pass
+    #
+    # def distance(self):
+    #     pass
+    #
+    # def duration(self): # lifespan
+    #     pass
+
 
 @register_snippet
 class Source(models.Model):
     # TODO this clearly needs work
+
+    CATEGORIES = (
+        ('website','website'),
+        ('book','book'),
+        ('journal_article','journal article'),
+        ('newspaper_article','newspaper article'),
+    )
+    category = models.CharField(
+        max_length=25,
+        choices=CATEGORIES,
+        default="website",
+    )
     title       = models.CharField(max_length=250)
     authors     = models.CharField(max_length=250, blank=True, null=True) # list, etc.
     editors     = models.CharField(max_length=250, blank=True, null=True)
@@ -77,6 +117,7 @@ class Source(models.Model):
         return '{} by {}'.format(self.title, self.authors)
 
 
+
 # TODO: Modifying Images (following) will require editing the admin templates.
 # class CustomImage(AbstractImage):
 #     schema = 'http://schema.org/ImageObject'
@@ -96,3 +137,21 @@ class Source(models.Model):
 #         unique_together = (
 #             ('image', 'filter_spec', 'focal_point_key'),
 #         )
+# @register_snippet
+# class ImageCategory(models.Model):
+#     name = models.CharField(max_length=255)
+#     icon = models.ForeignKey(
+#         'wagtailimages.Image', null=True, blank=True,
+#         on_delete=models.SET_NULL, related_name='+'
+#     )
+
+#     panels = [
+#         FieldPanel('name'),
+#         ImageChooserPanel('icon'),
+#     ]
+
+#     def __str__(self):
+#         return self.name
+
+#     class Meta:
+#         verbose_name_plural = 'image categories'
